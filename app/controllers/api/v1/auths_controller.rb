@@ -1,7 +1,6 @@
 module Api
   module V1
-    class AuthsController < ApplicationController
-      skip_before_action :verify_authenticity_token
+    class AuthsController < BaseApiController
 
       def signup
         user = User.new(user_params)

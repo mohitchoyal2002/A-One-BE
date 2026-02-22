@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   has_many :reward_applications
+  has_many :feedbacks, dependent: :destroy
   has_secure_password
 
   validates :full_name, presence: true

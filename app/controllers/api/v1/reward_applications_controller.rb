@@ -1,21 +1,54 @@
 module Api
   module V1
-    class RewardApplicationsController < ApplicationController
-      skip_before_action :verify_authenticity_token
+    class RewardApplicationsController < BaseApiController
       before_action :set_user
 
       def index
-        @reward_applications = @user.reward_applications.includes(:reward_application_items)
-        render json: @reward_applications.as_json(include: { reward_application_items: { methods: :total_price } })
+        @reward_applications = @user.reward_applications.order(created_at: :desc)
+        render json: @reward_applications.as_json(
+          only: [:id, :user_id, :title, :status, :receipt_no, :receipt_amount, :points_to_earn,
+                 :auto_approved, :auto_rejected, :rejection_reason, :processed_at, :created_at]
+        )
       end
 
       def create
-        @reward_application = @user.reward_applications.new(reward_application_params)
+        receipt_no = reward_application_params[:receipt_no]
+
+        # Validate receipt_no presence
+        if receipt_no.blank?
+          render json: { error: 'Receipt number is required' }, status: :unprocessable_entity and return
+        end
+
+        # Check if receipt is already marked as used
+        receipt = Receipt.find_by(receipt_no: receipt_no)
+        if receipt&.used?
+          render json: { error: 'This receipt has already been redeemed' }, status: :bad_request and return
+        end
+
+        # Check for duplicate submission by ANY user (not yet rejected)
+        existing = RewardApplication.where(receipt_no: receipt_no).where.not(status: 'rejected').first
+        if existing
+          render json: { error: 'This receipt has already been submitted for rewards' }, status: :bad_request and return
+        end
+
+        # Look up receipt for immediate info
+        receipt_amount = receipt ? receipt.amount : 0
+        points_to_earn = receipt ? ((receipt.amount / 100).floor * 10) : 0
+
+        @reward_application = @user.reward_applications.new(
+          title: "Receipt Redemption - #{receipt_no}",
+          receipt_no: receipt_no,
+          receipt_amount: receipt_amount,
+          points_to_earn: points_to_earn,
+          status: 'pending'
+        )
 
         if @reward_application.save
-          render json: @reward_application, status: :created
+          render json: @reward_application.as_json(
+            only: [:id, :user_id, :title, :status, :receipt_no, :receipt_amount, :points_to_earn, :created_at]
+          ), status: :created
         else
-          render json: @reward_application.errors, status: :unprocessable_entity
+          render json: { errors: @reward_application.errors.full_messages }, status: :unprocessable_entity
         end
       end
 
@@ -24,29 +57,15 @@ module Api
       def set_user
         if params[:user_id].present?
           @user = User.find(params[:user_id])
+        elsif params[:reward_application] && params[:reward_application][:user_id]
+          @user = User.find(params[:reward_application][:user_id])
         else
-           # Fallback for create if user_id is in body
-           if params[:reward_application] && params[:reward_application][:user_id]
-             @user = User.find(params[:reward_application][:user_id])
-           elsif params[:user_id].nil? && action_name == 'create'
-              # Try to find user_id in the root of params if passed directly?
-              # Better to rely on strong params or explicit checks.
-              # For now, let's assume it might be passed as a query param or body param handled by params.
-              render json: { error: 'User ID is required' }, status: :unauthorized and return
-           else
-              render json: { error: 'User ID is required' }, status: :unauthorized and return
-           end
+          render json: { error: 'User ID is required' }, status: :unauthorized and return
         end
-      rescue ActiveRecord::RecordNotFound
-        render json: { error: 'User not found' }, status: :not_found
       end
 
       def reward_application_params
-        params.require(:reward_application).permit(
-          :title,
-          :user_id,
-          reward_application_items_attributes: [:product_id, :price, :quantity]
-        )
+        params.require(:reward_application).permit(:receipt_no, :user_id)
       end
     end
   end

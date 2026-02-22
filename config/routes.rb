@@ -11,9 +11,30 @@ Rails.application.routes.draw do
     namespace :v1 do
       post 'signup', to: 'auths#signup'
       post 'signin', to: 'auths#signin'
-      resources :users, only: [:show]
+      resources :users, only: [:show, :update]
+      resources :feedbacks, only: [:create]
       resources :products, only: [:index, :show]
       resources :reward_applications, only: [:create, :index]
+      post 'admin/signin', to: 'admin_auths#signin'
+      get 'admin/stats', to: 'admin#stats'
+      get 'admin/users', to: 'admin#users'
+      get 'admin/feedbacks', to: 'admin#feedbacks'
+      put 'admin/users/:id', to: 'admin#update_user'
+      delete 'admin/users/:id', to: 'admin#destroy_user'
+      get 'admin/reward_requests', to: 'admin#reward_requests'
+      put 'admin/reward_requests/:id', to: 'admin#update_reward_request'
+      post 'admin/receipts', to: 'admin#create_receipt'
+      post 'admin/receipts/import_csv', to: 'admin#import_receipts'
+      get 'admin/products', to: 'admin#products'
+      post 'admin/products/import_csv', to: 'admin#import_csv'
+      post 'admin/products', to: 'admin#create_product'
+      put 'admin/products/:id', to: 'admin#update_product'
+      delete 'admin/products/:id', to: 'admin#destroy_product'
+      # Slider routes
+      get 'sliders', to: 'sliders#index'
+      get 'admin/sliders', to: 'admin#slider_images'
+      post 'admin/sliders', to: 'admin#create_slider_image'
+      delete 'admin/sliders/:id', to: 'admin#destroy_slider_image'
     end
   end
 

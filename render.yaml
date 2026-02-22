@@ -1,0 +1,63 @@
+databases:
+  - name: shop-be-db
+    databaseName: shop_be
+    user: shop_be_user
+
+services:
+  - type: redis
+    name: shop-be-redis
+    ipAllowList: []
+
+  - type: web
+    name: shop-be-web
+    env: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shop-be-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: shop-be-redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+  - type: worker
+    name: shop-be-sidekiq
+    env: ruby
+    buildCommand: "bundle install"
+    startCommand: "bundle exec sidekiq"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shop-be-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: shop-be-redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+  - type: worker
+    name: shop-be-rewards-processor
+    env: ruby
+    buildCommand: "bundle install"
+    startCommand: "bundle exec rake rewards:process"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shop-be-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: shop-be-redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
