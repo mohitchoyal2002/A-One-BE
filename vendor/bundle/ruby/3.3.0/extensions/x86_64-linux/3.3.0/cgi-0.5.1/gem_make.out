@@ -1,0 +1,18 @@
+current directory: /home/pc/Desktop/dc-shop-uis/shop-be/vendor/bundle/ruby/3.3.0/gems/cgi-0.5.1/ext/cgi/escape
+/usr/share/rvm/rubies/ruby-3.3.4/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /home/pc/Desktop/dc-shop-uis/shop-be/vendor/bundle/ruby/3.3.0/gems/cgi-0.5.1/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20260222-30614-hrxzu2 sitelibdir\=./.gem.20260222-30614-hrxzu2 clean
+
+current directory: /home/pc/Desktop/dc-shop-uis/shop-be/vendor/bundle/ruby/3.3.0/gems/cgi-0.5.1/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20260222-30614-hrxzu2 sitelibdir\=./.gem.20260222-30614-hrxzu2
+compiling escape.c
+linking shared-object cgi/escape.so
+
+current directory: /home/pc/Desktop/dc-shop-uis/shop-be/vendor/bundle/ruby/3.3.0/gems/cgi-0.5.1/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20260222-30614-hrxzu2 sitelibdir\=./.gem.20260222-30614-hrxzu2 install
+/usr/bin/install -c -m 0755 escape.so ./.gem.20260222-30614-hrxzu2/cgi
+
+current directory: /home/pc/Desktop/dc-shop-uis/shop-be/vendor/bundle/ruby/3.3.0/gems/cgi-0.5.1/ext/cgi/escape
+make DESTDIR\= sitearchdir\=./.gem.20260222-30614-hrxzu2 sitelibdir\=./.gem.20260222-30614-hrxzu2 clean
